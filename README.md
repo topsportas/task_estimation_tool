@@ -7,8 +7,6 @@ Features
 
 🃏 Supports standard Scrum Poker decks (e.g., Fibonacci)
 
-🔄 Real-time updates using WebSockets
-
 🧩 Lightweight UI, optimized for fast sessions
 
 🌐 No login required – just create or join a room
