@@ -1,0 +1,16 @@
+.card {
+    display: inline-block;
+    padding: 20px;
+    margin: 10px;
+    font-size: 24px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.card:hover {
+    background: #f0f0f0;
+}
+.selected {
+    background: lightgreen;
+}

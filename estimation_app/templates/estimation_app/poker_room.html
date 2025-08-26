@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scrum Poker Room {{ room.code }}</title>
+    <link rel="stylesheet" href="{% static 'estimation_app/css/style.css' %}">
+    <script>
+        // Expose variables for script.js
+        const submitVoteUrl = "{% url 'submit_vote' room.code %}";
+        const csrfToken = "{{ csrf_token }}";
+    </script>
+    <script src="{% static 'estimation_app/js/script.js' %}"></script>
+</head>
+<body>
+    <h1>Room {{ room.code }}</h1>
+    <div>
+        {% for card in cards %}
+            <div class="card" data-value="{{ card }}">{{ card }}</div>
+        {% endfor %}
+    </div>
+</body>
+</html>

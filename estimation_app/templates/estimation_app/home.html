@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dennis is Best Resource Manager</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'estimation_app/style.css' %}">
-</head>
-<body>
-    <h1>🔥🚴 Dennis is Best Resource Manager 🚴🔥</h1>
-</body>
-</html>
+<h1>Welcome to Scrum Poker</h1>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Create New Room</button>
+</form>
