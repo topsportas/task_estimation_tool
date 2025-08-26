@@ -1,5 +1,14 @@
-<h1>Welcome to Scrum Poker</h1>
+<!-- home.html -->
+<h1>Scrum Poker</h1>
+
+<h2>Create a Room</h2>
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Create New Room</button>
+    {{ form.as_p }}
+    <button type="submit">Create Room</button>
 </form>
+
+<h2>Or Join an Existing Room</h2>
+<a href="{% url 'join_room' %}">
+    <button type="button">Join Room</button>
+</a>

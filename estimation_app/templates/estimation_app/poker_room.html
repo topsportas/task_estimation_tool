@@ -4,19 +4,34 @@
 <head>
     <title>Scrum Poker Room {{ room.code }}</title>
     <link rel="stylesheet" href="{% static 'estimation_app/css/style.css' %}">
+
+    <!-- Expose variables to script.js -->
     <script>
-        // Expose variables for script.js
         const submitVoteUrl = "{% url 'submit_vote' room.code %}";
+        const roomCode = "{{ room.code }}";
         const csrfToken = "{{ csrf_token }}";
     </script>
+
     <script src="{% static 'estimation_app/js/script.js' %}"></script>
 </head>
 <body>
     <h1>Room {{ room.code }}</h1>
-    <div>
+
+    <h2>Players</h2>
+    <ul id="players-list">
+        {% for player in players %}
+        <li>{{ player.user.username }}{% if player.vote %} -> {{ player.vote.value }}{% endif %}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Cards</h2>
+    <div id="cards-container">
         {% for card in cards %}
             <div class="card" data-value="{{ card }}">{{ card }}</div>
         {% endfor %}
     </div>
+
+    <!-- Hidden div for storing room code (optional, can be used in JS) -->
+    <div id="room-data" data-code="{{ room.code }}" style="display:none;"></div>
 </body>
 </html>
