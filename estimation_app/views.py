@@ -4,19 +4,12 @@ from django.views.generic import TemplateView, View
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django import forms
 from django.contrib.auth.models import User
 from .models import Room, Player, Vote
 from django.utils.crypto import get_random_string
+from .forms import CreateRoomForm, JoinRoomForm
 
 SCRUM_POKER_CARDS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-
-class CreateRoomForm(forms.Form):
-    name = forms.CharField(max_length=50, label="Your Name")
-
-class JoinRoomForm(forms.Form):
-    name = forms.CharField(max_length=50, label="Your Name")
-    code = forms.CharField(max_length=10, label="Room Code")
 
 class JoinRoomView(View):
     template_name = "estimation_app/join_room.html"
@@ -66,6 +59,7 @@ class HomeView(TemplateView):
         form = CreateRoomForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data["name"]
+            print(name)
             # Generate random 6-digit code
             code = str(random.randint(100000, 999999))
             room = Room.objects.create(code=code)
