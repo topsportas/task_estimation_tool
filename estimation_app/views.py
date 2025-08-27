@@ -1,6 +1,6 @@
 import json
 import random
-from django.views.generic import TemplateView, View
+from django.views.generic import TemplateView, View, FormView
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,73 +11,54 @@ from .forms import CreateRoomForm, JoinRoomForm
 
 SCRUM_POKER_CARDS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
-class JoinRoomView(View):
+
+class JoinRoomView(FormView):
     template_name = "estimation_app/join_room.html"
+    form_class = JoinRoomForm
 
-    def get(self, request, *args, **kwargs):
-        form = JoinRoomForm()
-        return render(request, self.template_name, {"form": form})
+    def form_valid(self, form):
+        name = form.cleaned_data["name"]
+        code = form.cleaned_data["code"]
+        # Check if room exists
+        room = Room.objects.get(code=code)
 
-    def post(self, request, *args, **kwargs):
-        form = JoinRoomForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data["name"]
-            code = form.cleaned_data["code"]
+        # Create temporary user
+        username = f"{name}_{get_random_string(4)}"
+        user = User.objects.create(username=username)
 
-            # Check if room exists
-            try:
-                room = Room.objects.get(code=code)
-            except Room.DoesNotExist:
-                return render(request, self.template_name, {
-                    "form": form,
-                    "error": "Room not found."
-                })
+        # Save username in session
+        self.request.session["player_username"] = user.username
 
-            # Create temporary user
-            username = f"{name}_{get_random_string(4)}"
-            user = User.objects.create(username=username)
+        # Add player to room
+        Player.objects.create(user=user, room=room)
 
-            # Save username in session
-            request.session["player_username"] = user.username
-            request.session.save()
+        return redirect("room", code=room.code)
 
-            # Add player to room
-            Player.objects.create(user=user, room=room)
 
-            return redirect("room", code=room.code)
-
-        return render(request, self.template_name, {"form": form})
-
-class HomeView(TemplateView):
+class HomeView(FormView):
     template_name = "estimation_app/home.html"
+    form_class = CreateRoomForm
 
-    def get(self, request, *args, **kwargs):
-        form = CreateRoomForm()
-        return render(request, self.template_name, {"form": form})
+    def form_valid(self, form):
+        name = form.cleaned_data["name"]
+        # Generate random 6-digit code
+        code = str(random.randint(100000, 999999))
+        room = Room.objects.create(code=code)
 
-    def post(self, request, *args, **kwargs):
-        form = CreateRoomForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data["name"]
-            print(name)
-            # Generate random 6-digit code
-            code = str(random.randint(100000, 999999))
-            room = Room.objects.create(code=code)
+        # Create temporary user
+        username = f"{name}_{get_random_string(4)}"
+        user = User.objects.create(username=username)
 
-            # Create temporary user
-            username = f"{name}_{get_random_string(4)}"
-            user = User.objects.create(username=username)
+        # Save username in session
+        self.request.session["player_username"] = user.username
+        self.request.session.save()
 
-            # Save username in session
-            request.session["player_username"] = user.username
-            request.session.save()
+        # Add player to room
+        Player.objects.create(user=user, room=room)
 
-            # Add player to room
-            Player.objects.create(user=user, room=room)
+        # Redirect to the room
+        return redirect("room", code=room.code)
 
-            # Redirect to the room
-            return redirect("room", code=room.code)
-        return render(request, self.template_name, {"form": form})
 
 class RoomView(TemplateView):
     template_name = "estimation_app/poker_room.html"
@@ -98,13 +79,13 @@ class RoomView(TemplateView):
         context["players"] = room.players.select_related("user").all()
         return context
 
+
 class SubmitVoteView(View):
     def post(self, request, code):
         try:
             data = json.loads(request.body)
             card_value = data.get("value")
             room = get_object_or_404(Room, code=code)
-
 
             # Get current player from session
             username = request.session.get("player_username")
@@ -122,6 +103,7 @@ class SubmitVoteView(View):
 
         except Exception as e:
             return JsonResponse({"success": False, "error": str(e)}, status=400)
+
 
 class RoomStateView(View):
     def get(self, request, code):

@@ -1,9 +1,13 @@
-<h1>Join a Room</h1>
-{% if error %}
-<p style="color:red">{{ error }}</p>
-{% endif %}
 <form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Join Room</button>
+    {% csrf_token %}
+    {% for field in form %}
+    <p>
+        {{ field.label_tag }}<br>
+        {{ field }}
+        {% if field.errors %}
+        <span style="color:red">{{ field.errors|striptags }}</span>
+        {% endif %}
+    </p>
+    {% endfor %}
+    <button type="submit">Join Room</button>
 </form>
