@@ -8,9 +8,11 @@
     cursor: pointer;
     transition: 0.2s;
 }
+
 .card:hover {
     background: #f0f0f0;
 }
+
 .selected {
     background: lightgreen;
 }

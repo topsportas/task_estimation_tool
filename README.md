@@ -10,3 +10,6 @@ Features
 🧩 Lightweight UI, optimized for fast sessions
 
 🌐 No login required – just create or join a room
+
+How to launch:
+On root folder in terminal run command "python3 manage.py runserver"
