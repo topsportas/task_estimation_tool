@@ -12,5 +12,8 @@ db.sqlite3
 # Virtual Environment
 venv/
 
+# JetBrains IDEs (e.g., PyCharm)
+.idea/
+
 # OS
 .DS_Store
