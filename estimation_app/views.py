@@ -2,8 +2,7 @@ import json
 import random
 from django.views.generic import TemplateView, View, FormView
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.models import User
 from .models import Room, Player, Vote
 from django.utils.crypto import get_random_string
@@ -90,14 +89,16 @@ class SubmitVoteView(View):
             # Get current player from session
             username = request.session.get("player_username")
             if not username:
-                return JsonResponse({"success": False, "error": "Player not found in session"}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "Player not found in session"},
+                    status=400,
+                )
 
             player = get_object_or_404(Player, user__username=username, room=room)
 
             # Save or update vote
             vote, _ = Vote.objects.update_or_create(
-                player=player,
-                defaults={"value": card_value}
+                player=player, defaults={"value": card_value}
             )
             return JsonResponse({"success": True, "vote": vote.value})
 
@@ -112,8 +113,5 @@ class RoomStateView(View):
         data = []
         for player in players:
             vote = player.vote.value if hasattr(player, "vote") else None
-            data.append({
-                "name": player.user.username,
-                "vote": vote
-            })
+            data.append({"name": player.user.username, "vote": vote})
         return JsonResponse({"players": data})
