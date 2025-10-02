@@ -17,7 +17,6 @@ class JoinRoomView(LoginRequiredMixin, FormView):
     login_url = "/login/"
 
     def form_valid(self, form):
-        # name = form.cleaned_data["name"]
         code = form.cleaned_data["code"]
         # Check if room exists
         room = get_object_or_404(Room, code=code)
@@ -33,7 +32,6 @@ class HomeView(LoginRequiredMixin, FormView):
     login_url = "/login/"
 
     def form_valid(self, form):
-        # name = form.cleaned_data["name"]
         # Generate random 6-digit code
         code = str(random.randint(100000, 999999))
         room = Room.objects.create(code=code)
