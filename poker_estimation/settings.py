@@ -40,6 +40,10 @@ INSTALLED_APPS = [
     "estimation_app",
 ]
 
+LOGIN_URL = '/login/'              # Redirect here if a user is not logged in
+LOGIN_REDIRECT_URL = '/'           # Redirect here after successful login
+LOGOUT_REDIRECT_URL = '/login/'    # Redirect here after logout
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
