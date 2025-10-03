@@ -1,13 +1,13 @@
 from django import forms
 from .models import Room
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 
 
 class CreateRoomForm(forms.Form):
-    name = forms.CharField(max_length=50, label="Your Name")
-
+    pass
 
 class JoinRoomForm(forms.Form):
-    name = forms.CharField(max_length=50, label="Your Name")
     code = forms.CharField(max_length=10, label="Room Code")
 
     def clean_code(self):
@@ -15,3 +15,9 @@ class JoinRoomForm(forms.Form):
         if not Room.objects.filter(code=code).exists():
             raise forms.ValidationError("Room not found.")
         return code
+
+class CreateUserForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ["username", "password1", "password2"]
+
