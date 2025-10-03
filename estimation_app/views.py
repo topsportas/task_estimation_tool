@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Room, Player, Vote
-from .forms import CreateRoomForm, JoinRoomForm
+from .forms import CreateRoomForm, JoinRoomForm, CreateUserForm
 from django.contrib.auth.views import LoginView
 
 SCRUM_POKER_CARDS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
@@ -101,3 +101,12 @@ class RoomStateView(LoginRequiredMixin, View):
 
 class UserLoginView(LoginView):
     template_name = "estimation_app/login.html"
+
+class UserCreateView(FormView):
+    template_name = "estimation_app/register.html"
+    form_class = CreateUserForm
+    success_url = "/login/"
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
