@@ -10,7 +10,7 @@ db.sqlite3
 *.mo
 
 # Virtual Environment
-venv/
+.venv/
 
 # JetBrains IDEs (e.g., PyCharm)
 .idea/
