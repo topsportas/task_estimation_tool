@@ -7,14 +7,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Room, Player, Vote
 from .forms import CreateRoomForm, JoinRoomForm, CreateUserForm
 from django.contrib.auth.views import LoginView
-
-SCRUM_POKER_CARDS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+from .constants import SCRUM_POKER_CARDS
 
 
 class JoinRoomView(LoginRequiredMixin, FormView):
     template_name = "estimation_app/join_room.html"
     form_class = JoinRoomForm
-    login_url = "/login/"
 
     def form_valid(self, form):
         code = form.cleaned_data["code"]
@@ -29,7 +27,6 @@ class JoinRoomView(LoginRequiredMixin, FormView):
 class HomeView(LoginRequiredMixin, FormView):
     template_name = "estimation_app/home.html"
     form_class = CreateRoomForm
-    login_url = "/login/"
 
     def form_valid(self, form):
         # Generate random 6-digit code
@@ -45,7 +42,6 @@ class HomeView(LoginRequiredMixin, FormView):
 
 class RoomView(LoginRequiredMixin, TemplateView):
     template_name = "estimation_app/poker_room.html"
-    login_url = "/login/"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -62,7 +58,6 @@ class RoomView(LoginRequiredMixin, TemplateView):
 
 
 class SubmitVoteView(LoginRequiredMixin, View):
-    login_url = "/login/"
     def post(self, request, code):
         try:
             data = json.loads(request.body)
@@ -71,13 +66,14 @@ class SubmitVoteView(LoginRequiredMixin, View):
 
             user = request.user
             if not user.is_authenticated:
-                return JsonResponse({"success": False, "error": "User not authenticated"}, status=403)
+                return JsonResponse(
+                    {"success": False, "error": "User not authenticated"}, status=403
+                )
             player = get_object_or_404(Player, user__username=user, room=room)
 
             # Save or update vote
             vote, _ = Vote.objects.update_or_create(
-                player=player,
-                defaults={"value": card_value}
+                player=player, defaults={"value": card_value}
             )
             return JsonResponse({"success": True, "vote": vote.value})
 
@@ -86,21 +82,19 @@ class SubmitVoteView(LoginRequiredMixin, View):
 
 
 class RoomStateView(LoginRequiredMixin, View):
-    login_url = "/login/"
     def get(self, request, code):
         room = get_object_or_404(Room, code=code)
         players = room.players.select_related("user").all()
         data = []
         for player in players:
             vote = player.vote.value if hasattr(player, "vote") else None
-            data.append({
-                "name": player.user.username,
-                "vote": vote
-            })
+            data.append({"name": player.user.username, "vote": vote})
         return JsonResponse({"players": data})
+
 
 class UserLoginView(LoginView):
     template_name = "estimation_app/login.html"
+
 
 class UserCreateView(FormView):
     template_name = "estimation_app/register.html"
