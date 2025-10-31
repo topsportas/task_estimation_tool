@@ -37,12 +37,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "estimation_app",
+    "authapp",
+    "roomapp",
 ]
 
-LOGIN_URL = '/login/'              # Redirect here if a user is not logged in
-LOGIN_REDIRECT_URL = '/'           # Redirect here after successful login
-LOGOUT_REDIRECT_URL = '/login/'    # Redirect here after logout
+LOGIN_URL = "/auth/login/"  # Redirect here if a user is not logged in
+LOGIN_REDIRECT_URL = "/"  # Redirect here after successful login
+LOGOUT_REDIRECT_URL = "/auth/login/"  # Redirect here after logout
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

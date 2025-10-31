@@ -1,0 +1,41 @@
+<!-- templates/roomapp/home.html -->
+
+<!doctype html>
+<html>
+  <head>
+    <title>Scrum Poker</title>
+  </head>
+  <body>
+    <!-- Header with user info -->
+    <header>
+      {% if request.user.is_authenticated %}
+      <p>Welcome, {{ request.user.username }}!</p>
+      <form
+        method="post"
+        action="{% url 'authapp:logout' %}"
+        style="display: inline"
+      >
+        {% csrf_token %}
+        <button type="submit" class="logout-button">Logout</button>
+      </form>
+      {% else %}
+      <a href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </header>
+
+    <h1>Scrum Poker</h1>
+
+    <!-- Create Room Section -->
+    <h2>Create a Room</h2>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Create Room</button>
+    </form>
+
+    <!-- Join Room Section -->
+    <h2>Or Join an Existing Room</h2>
+    <a href="{% url 'join_room' %}">
+      <button type="button">Join Room</button>
+    </a>
+  </body>
+</html>
