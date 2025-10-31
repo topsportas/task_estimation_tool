@@ -5,13 +5,12 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Room, Player, Vote
-from .forms import CreateRoomForm, JoinRoomForm, CreateUserForm
-from django.contrib.auth.views import LoginView
+from .forms import CreateRoomForm, JoinRoomForm
 from .constants import SCRUM_POKER_CARDS
 
 
 class JoinRoomView(LoginRequiredMixin, FormView):
-    template_name = "estimation_app/join_room.html"
+    template_name = "roomapp/join_room.html"
     form_class = JoinRoomForm
 
     def form_valid(self, form):
@@ -25,7 +24,7 @@ class JoinRoomView(LoginRequiredMixin, FormView):
 
 
 class HomeView(LoginRequiredMixin, FormView):
-    template_name = "estimation_app/home.html"
+    template_name = "roomapp/home.html"
     form_class = CreateRoomForm
 
     def form_valid(self, form):
@@ -40,7 +39,7 @@ class HomeView(LoginRequiredMixin, FormView):
 
 
 class RoomView(LoginRequiredMixin, TemplateView):
-    template_name = "estimation_app/poker_room.html"
+    template_name = "roomapp/poker_room.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -83,17 +82,3 @@ class RoomStateView(LoginRequiredMixin, View):
             vote = player.vote.value if hasattr(player, "vote") else None
             data.append({"name": player.user.username, "vote": vote})
         return JsonResponse({"players": data})
-
-
-class UserLoginView(LoginView):
-    template_name = "estimation_app/login.html"
-
-
-class UserCreateView(FormView):
-    template_name = "estimation_app/register.html"
-    form_class = CreateUserForm
-    success_url = "/login/"
-
-    def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)

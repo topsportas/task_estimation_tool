@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from roomapp.views import HomeView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("estimation_app.urls")),
+    path("auth/", include("authapp.urls")),
+    path("room/", include("roomapp.urls")),
+    path("", HomeView.as_view(), name="home"),
 ]
