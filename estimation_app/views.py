@@ -1,5 +1,5 @@
 import json
-import random
+import uuid
 from django.views.generic import TemplateView, View, FormView
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -29,8 +29,7 @@ class HomeView(LoginRequiredMixin, FormView):
     form_class = CreateRoomForm
 
     def form_valid(self, form):
-        # Generate random 6-digit code
-        code = str(random.randint(100000, 999999))
+        code = uuid.uuid4().hex[:8]
         room = Room.objects.create(code=code)
         user = self.request.user
         # Add player to room
@@ -63,13 +62,7 @@ class SubmitVoteView(LoginRequiredMixin, View):
             data = json.loads(request.body)
             card_value = data.get("value")
             room = get_object_or_404(Room, code=code)
-
-            user = request.user
-            if not user.is_authenticated:
-                return JsonResponse(
-                    {"success": False, "error": "User not authenticated"}, status=403
-                )
-            player = get_object_or_404(Player, user__username=user, room=room)
+            player = get_object_or_404(Player, user__username=request.user, room=room)
 
             # Save or update vote
             vote, _ = Vote.objects.update_or_create(
