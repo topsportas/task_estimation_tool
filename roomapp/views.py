@@ -1,57 +1,36 @@
 import json
-import random
+import uuid
 from django.views.generic import TemplateView, View, FormView
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Room, Player, Vote
-from django.utils.crypto import get_random_string
 from .forms import CreateRoomForm, JoinRoomForm
+from .constants import SCRUM_POKER_CARDS
 
-SCRUM_POKER_CARDS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
-
-class JoinRoomView(FormView):
-    template_name = "estimation_app/join_room.html"
+class JoinRoomView(LoginRequiredMixin, FormView):
+    template_name = "roomapp/join_room.html"
     form_class = JoinRoomForm
 
     def form_valid(self, form):
-        name = form.cleaned_data["name"]
         code = form.cleaned_data["code"]
         # Check if room exists
-        room = Room.objects.get(code=code)
-
-        # Create temporary user
-        username = f"{name}_{get_random_string(4)}"
-        user = User.objects.create(username=username)
-
-        # Save username in session
-        self.request.session["player_username"] = user.username
-
-        # Add player to room
-        Player.objects.create(user=user, room=room)
-
+        room = get_object_or_404(Room, code=code)
+        user = self.request.user
+        # Check if the player already exists in this room
+        player, created = Player.objects.get_or_create(user=user, room=room)
         return redirect("room", code=room.code)
 
 
-class HomeView(FormView):
-    template_name = "estimation_app/home.html"
+class HomeView(LoginRequiredMixin, FormView):
+    template_name = "roomapp/home.html"
     form_class = CreateRoomForm
 
     def form_valid(self, form):
-        name = form.cleaned_data["name"]
-        # Generate random 6-digit code
-        code = str(random.randint(100000, 999999))
+        code = uuid.uuid4().hex[:8]
         room = Room.objects.create(code=code)
-
-        # Create temporary user
-        username = f"{name}_{get_random_string(4)}"
-        user = User.objects.create(username=username)
-
-        # Save username in session
-        self.request.session["player_username"] = user.username
-        self.request.session.save()
-
+        user = self.request.user
         # Add player to room
         Player.objects.create(user=user, room=room)
 
@@ -59,19 +38,16 @@ class HomeView(FormView):
         return redirect("room", code=room.code)
 
 
-class RoomView(TemplateView):
-    template_name = "estimation_app/poker_room.html"
+class RoomView(LoginRequiredMixin, TemplateView):
+    template_name = "roomapp/poker_room.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         room = get_object_or_404(Room, code=self.kwargs["code"])
         context["room"] = room
         context["cards"] = SCRUM_POKER_CARDS
-        # Get current player from session
-        username = self.request.session.get("player_username")
-        player = None
-        if username:
-            player = room.players.filter(user__username=username).first()
+        # Get current player for logged-in user
+        player = room.players.filter(user=self.request.user).first()
         context["current_player"] = player
 
         # List all players
@@ -79,22 +55,13 @@ class RoomView(TemplateView):
         return context
 
 
-class SubmitVoteView(View):
+class SubmitVoteView(LoginRequiredMixin, View):
     def post(self, request, code):
         try:
             data = json.loads(request.body)
             card_value = data.get("value")
             room = get_object_or_404(Room, code=code)
-
-            # Get current player from session
-            username = request.session.get("player_username")
-            if not username:
-                return JsonResponse(
-                    {"success": False, "error": "Player not found in session"},
-                    status=400,
-                )
-
-            player = get_object_or_404(Player, user__username=username, room=room)
+            player = get_object_or_404(Player, user__username=request.user, room=room)
 
             # Save or update vote
             vote, _ = Vote.objects.update_or_create(
@@ -106,7 +73,7 @@ class SubmitVoteView(View):
             return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
-class RoomStateView(View):
+class RoomStateView(LoginRequiredMixin, View):
     def get(self, request, code):
         room = get_object_or_404(Room, code=code)
         players = room.players.select_related("user").all()
